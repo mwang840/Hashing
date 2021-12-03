@@ -1,83 +1,196 @@
-
-#ifndef HASHMAP_HPP_
-#define HASHMAP_HPP_
-
-
+#include <bits/stdc++.h>
+#include "hashMap.hpp"
 #include "hashNode.hpp"
+#include <iostream>
+#include <string.h>
+#include <math.h>
+using namespace std;
 
-class hashMap {
-	friend class makeSeuss;
-	hashNode **map;  //Note that this is a dynamically 
-			//allocated array of pointers to hash Nodes.  It 
-			//is not a matrix.  I made it a pointer to an 
-			//array of pointers to nodes because I didn't 
-			//want to have to delete every hash Node and 
-			//then create a new one when I rehashed the 
-			//array.
-	string first; // for first keyword for printing to a file
-	int numKeys;  // Number of keys currently in the hashMap
-	int mapSize;  // total size of the hashMap array
-	bool hashfn;  // a bool indicating whether to use hash 
-			//function 1 or hash function 2 (we're comparing 
-			//hash function efficiencies)
-	bool collfn;  // a bool indicating whether to use the 
-			//collision function 1 or the collision function 
-			//2 (we're also comparing the efficiency of 
-			//different collision functions)
-	int collisions;  // number of collisions using the 
-			//collision-handling method
-	int hashcoll; //number of initial collisions using just 
-			//the hash function
+//Constructor for the hashmap. //when creating the
+//map, make sure you initialize the values to
+//NULL so you know whether that index has a key
+//in it or is set to NULL
+// ****here you’re just looping through the map of hashNodes (a pointer to an array of
+//pointers to hashNodes) and initializing the array to NULL
 
-public:
-	hashMap(bool hash1, bool coll1);  // when creating the 
-			//map, make sure you initialize the values to 
-			//NULL so you know whether that index has a key 
-			//in it or is set to NULL
-	void addKeyValue(string k, string v);
-			// adds a node  to the map at the correct index 
-			// based on the key string, and then inserts the
-			// value into the value field of the hashNode
-			// Must check to see whether there's already a 
-			// node at that location.  If there's nothing 
-			// there(it's NULL), add the hashNode with the 
-			// keyword and value.
-			// If the node has the same keyword, just add 
-			// the value to the list of values.
-			// If the node has a different keyword, keep 
-			// calculating a new hash index until either the
-			// keyword matches the node at that index's 
-			// keyword, or until the map at that index is 
-			// NULL, in which case you'll add the node 
-			// there.
-			// This method also checks for load, and if the 
-			// load is over 70%, it calls the reHash method 
-			// to create a new longer map array and rehash 
-			// the values
-	int getIndex(string k); // uses calcHash and reHash to 
-			// calculate and return the index of where
-			// the keyword k should be inserted into the map 
-			// array
-	int calcHash1(string k);  // hash function
-	int calcHash2(string k);  // hash function 2
-	void getClosestPrime();  // I used a binary search and an  
-			//array of primes to find the closest prime to 
-			//double the map Size, and then set mapSize to 
-			//that new prime - you can find the prime in
-			//another way if you choose
-	int hashFunc(string key);//
+hashMap::hashMap(bool hash1, bool coll1) {
+	mapSize = 101;
+	numKeys = 0;
+	hashfn = hash1;
+	collfn = coll1;
+	map = new hashNode*[mapSize];
+	for(int i = 0; i < mapSize; ++i){
+		map[i] = NULL;
+	}
+}
 
-	void reHash();  // when size of array is at 70%, double 
-			//array size and rehash keys
-	int coll1(int h, int i, string k);  // a probing method 
-			//for collisions (when index is already full)
-	int coll2(int h, int i, string k);  // a different method 
-			//for dealing with collisions
-	void printMap();  //I wrote this solely to check if 
-			//everything was working.
+//
+int hashMap::hashFunc(string k){
+	return k.length() % mapSize;
+}
 
-	int findKey(string k);//Finds the key in the hashmap. No loops or 50% grade deduction. Besides finding in hashing is O(1) not O(n).
-};
+//Adds the string (v) while checking to see if the key is empty or not
+void hashMap::addKeyValue(string k, string v) {
+	int key = hashFunc(k);
+	for(int i = 0; i < mapSize; ++i){
+
+		//if(key== NULL){
+
+		//}
+	}
+
+}
+
+//Finds the key in the hashmap. No loops or 50% grade deduction. Besides, finding in hashing is O(1) not O(n) ya noob!
+int hashMap::getIndex(string k) {
+	int key = 0;
+	int ascii = 0;
+	for(int i = 0; i < k.length(); ++i){
+			ascii += (int)(k[i]) - 48;
+	}
+	if((float)numKeys/mapSize == 0.7){
+		reHash();
+	}
+	if(hashfn == true){
+		key = calcHash1(k);
+	}
+	else if(hashfn == false){
+		key = calcHash2(k);
+	}
+
+	if(map[key] != NULL){
+		if(collfn == true){
+			key = coll1(ascii,key, k);
+		}
+		else if(collfn == false){
+			key = coll2(ascii,key, k);
+		}
+	}
 
 
-#endif /* HASHMAP_HPP_ */
+	return key;
+}
+
+//This function hits different. This one opts to find the length of the string, then iterates over the mapsize and the string length as well while
+//modding over the mapSize to get the hash.
+int hashMap::calcHash2(string k){
+	int conversion = 0;
+	int length = k.length();
+	for(int j = 0; j < mapSize; ++j){
+		for(int i = length - 1; i > 0; --i){
+			conversion = (13 * conversion + ((int)k[i] * [length-i-1])) % mapSize;
+		}
+	}
+	return conversion;
+}
+
+
+//Goes over each character, converts it to ascii and mods it by the map size
+int hashMap::calcHash1(string k){
+	int conversion = 0;
+	for(int i = 0; i < k.length(); ++i){
+		conversion += (int)(k[i]) - 48;
+	}
+	conversion = conversion % mapSize;
+	return conversion;
+}
+
+//Binary search must be used here
+void hashMap::getClosestPrime() {
+	int closePrime = 0;
+	int number = calcHash1(first);
+	mapSize = mapSize * 2;
+	int middle = currSize / 2;
+
+
+	for(int i = 2; i < 9; ++i){
+		if((number % i) != 0 && (number != i)){
+			closePrime = number;
+		}
+	}
+	mapSize = closePrime;
+}
+
+//Rehashes the array via copying the old values in the new data then deleting the old value
+void hashMap::reHash() {
+	int existSize = mapSize;
+	existSize*= 2;
+	hashNode **temp = map;
+	map = new hashNode *[existSize];
+	while(temp!=NULL){
+		getIndex(temp->*keyword);
+	}
+
+	delete [] map;
+}
+
+//Probing starts here, this one is a quadratic probing
+int hashMap::coll1(int h, int i, string k) {
+	int collide = 0;
+	int convert = 0;
+	for(int j = 0; j < k.length(); ++j){
+		convert += (int)k[j] - 48;
+	}
+	convert = convert % mapSize;
+
+	for(int a = 0; a < i; ++a){
+		h = (h + (int)pow(i, i)) % mapSize;
+		if(h == convert){
+			collide = h;
+		}
+		else if(h == 0){
+
+			collide = i;
+		}
+		else{
+			collide = -1;
+		}
+	}
+
+	return collide;
+
+}
+//Other methods for probing collisions, in this case linear probing is used
+int hashMap::coll2(int h, int i, string k) {
+	int collide = 0;
+	int convert = 0;
+	for(int j = 0; j < k.length(); ++j){
+		convert += (int)k[j] - 48;
+	}
+		convert = convert % mapSize;
+
+		for(int a = 0; a < i; ++a){
+			h = (int)(h + pow(i, i)) % mapSize;
+
+			if(h == convert){
+				collide = a;
+			}
+			else if(h == 0){
+				collide = i;
+			}
+			else{
+				collide = -1;
+			}
+		}
+
+
+}
+
+
+
+//Prints out the map
+void hashMap::printMap() {
+	cout << "In printMap()" << endl;
+	for (int i = 0; i < mapSize; i++) {
+		//cout << "In loop" << endl;
+		if (map[i] != NULL) {
+			cout << map[i]->keyword << ": ";
+			for (int j = 0; j < map[i]->currSize;j++) {
+				cout << map[i]->values[j] << ", ";
+			}
+			cout << endl;
+		}
+	}
+}
+
+
