@@ -35,8 +35,6 @@ void hashNode::addValue(string v) {
 	// with a key
 	//The current size is updated as well
 	values[currSize++] = v;
-
-
 }
 void hashNode::dblArray() {
 	// when the value array gets full, you need to make a new 
@@ -47,7 +45,7 @@ void hashNode::dblArray() {
 	//here.
 	if(currSize == valuesSize){
 		valuesSize = valuesSize * 2;
-		string newValues = *values;
+		string *newValues = values;
 		newValues = new string[valuesSize];
 		for(int i = 0; i < valuesSize; ++i){
 			newValues[i] = i;
@@ -65,6 +63,7 @@ string hashNode::getRandValue() {
 	//will be the word that follows your key in your output 
 	//function, and it will also be the next key.
 	string random = "";
+	int mixed = rand() % valuesSize;
 
 
 	return random;
