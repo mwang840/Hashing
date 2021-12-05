@@ -17,7 +17,7 @@ hashMap::hashMap(bool hash1, bool coll1) {
 	mapSize = 101;
 	numKeys = 0;
 	hashfn = hash1;
-	collfn= coll1;
+	collfn = coll1;
 	map = new hashNode*[mapSize];
 	for(int i = 0; i < mapSize; ++i){
 		map[i] = NULL;
@@ -29,14 +29,11 @@ int hashMap::hashFunc(string k){
 	return k.length() % mapSize;
 }
 
-//Adds the string (v) while iterating over the key and checks to see if the key is empty or not
+//Adds the string (v) while checking to see if the key is empty or not
 void hashMap::addKeyValue(string k, string v) {
-	int key = hashFunc(k);
-	for(int i = 0; i < mapSize; ++i){
-
-		//if(key== NULL){
-
-		//}
+	int key = getIndex(k);
+	if(key != NULL){
+		cout<<"Can not add the value";
 	}
 
 }
@@ -52,19 +49,19 @@ int hashMap::getIndex(string k) {
 		reHash();
 	}
 	if(hashfn == true){
-		calcHash1(k);
+		key = calcHash1(k);
 	}
-	else if(hashfn== false){
-		calcHash2(k);
+	else if(hashfn == false){
+		key = calcHash2(k);
 	}
-	else if(collfn == true){
-		coll1(ascii,key, k);
-	}
-	else if(collfn == false){
-		coll2(ascii,key, k);
-	}
-	else{
-		key = NULL;
+
+	if(map[key] != NULL){
+		if(collfn == true){
+			key = coll1(ascii,key, k);
+		}
+		else if(collfn == false){
+			key = coll2(ascii,key, k);
+		}
 	}
 
 
@@ -75,11 +72,10 @@ int hashMap::getIndex(string k) {
 //modding over the mapSize to get the hash.
 int hashMap::calcHash2(string k){
 	int conversion = 0;
-	int length = k.length();
-	for(int j = 0; j < mapSize; ++j){
-		for(int i = length - 1; i > 0; --i){
-			conversion = (13 * conversion + ((int)k[i][length-i-1])) % mapSize;
-		}
+	int len = k.length();
+
+	for (int i = len-1; i >0; i--) {
+	conversion = (13*conversion + (int)k[i]) % mapSize;
 	}
 	return conversion;
 }
@@ -88,7 +84,8 @@ int hashMap::calcHash2(string k){
 //Goes over each character, converts it to ascii and mods it by the map size
 int hashMap::calcHash1(string k){
 	int conversion = 0;
-	for(int i = 0; i < k.length(); ++i){
+	int len = k.length();
+	for(int i = 0; i < len; ++i){
 		conversion += (int)(k[i]) - 48;
 	}
 	conversion = conversion % mapSize;
@@ -100,7 +97,7 @@ void hashMap::getClosestPrime() {
 	int closePrime = 0;
 	int number = calcHash1(first);
 	mapSize = mapSize * 2;
-	int middle = currSize / 2;
+	int middle = mapSize / 2;
 
 
 	for(int i = 2; i < 9; ++i){
@@ -112,14 +109,34 @@ void hashMap::getClosestPrime() {
 }
 
 //Rehashes the array via copying the old values in the new data then deleting the old value
+//1) Create new hashmap double the size
+//2) Collect nodes of current hashmap
+//3)Place collected nodes in newhashmap
+//4)Set map global variable to newHashmap
+
 void hashMap::reHash() {
 	int existSize = mapSize;
 	existSize*= 2;
-	hashNode **temp = map;
-	map = new hashNode *[existSize];
-	while(temp!=NULL){
-		getIndex(temp->first);
+	hashNode **old = new hashNode*[mapSize];
+	for(int i = 0; i < mapSize; ++i){
+			old[i] = map[i];
 	}
+	hashNode **temp = map;
+
+	map = new hashNode *[existSize];
+
+
+
+	for(int i = 0; i < existSize; ++i){
+		temp[i] = old[i];
+	}
+
+	temp = new hashNode*[existSize];
+	//Would dblArray be called?
+	/*while(temp!=NULL){
+		temp[i] = getIndex(temp->*first);
+
+	}*/
 
 	delete [] map;
 }
@@ -128,7 +145,8 @@ void hashMap::reHash() {
 int hashMap::coll1(int h, int i, string k) {
 	int collide = 0;
 	int convert = 0;
-	for(int j = 0; j < k.length(); ++j){
+	int len = k.length();
+	for(int j = 0; j < len; ++j){
 		convert += (int)k[j] - 48;
 	}
 	convert = convert % mapSize;
@@ -139,7 +157,7 @@ int hashMap::coll1(int h, int i, string k) {
 			collide = h;
 		}
 		else if(h == 0){
-			k = h[i];
+
 			collide = i;
 		}
 		else{
@@ -150,32 +168,39 @@ int hashMap::coll1(int h, int i, string k) {
 	return collide;
 
 }
-//Other methods for probing collisions, in this case linear probing is used
+//Other methods for probing collisions, in this case double hashing is used
 int hashMap::coll2(int h, int i, string k) {
 	int collide = 0;
 	int convert = 0;
-	for(int j = 0; j < k.length(); ++j){
+	int len = k.length();
+	for(int j = 0; len; ++j){
 		convert += (int)k[j] - 48;
 	}
 		convert = convert % mapSize;
 
-		for(int a = 0; a < i; ++a){
+	collide =  calcHash1(k);
+	if(collide != 0){
+		collide = calcHash2(k);
+	}
+	else if(calcHash2(k) != 0){
+		collide = calcHash1(k) + i * calcHash2(k);
+	}
+
+		/*for(int a = 0; a < i; ++a){
 			h = (int)(h + pow(i, i)) % mapSize;
 
 			if(h == convert){
-				k[a] = h[a];
 				collide = a;
 			}
 			else if(h == 0){
-				k[a] = h[a];
 				collide = i;
 			}
 			else{
 				collide = -1;
 			}
-		}
+		}*/
 
-
+		return collide;
 }
 
 
