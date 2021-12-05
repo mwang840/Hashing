@@ -64,8 +64,7 @@ string hashNode::getRandValue() {
 	//function, and it will also be the next key.
 	string random = "";
 	int mixed = rand() % valuesSize;
-
-
+	random = values[mixed];
 	return random;
 
 }
